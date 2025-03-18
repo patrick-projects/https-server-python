@@ -958,21 +958,45 @@ class FixedHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 # Get the requested path from query parameters
                 query = urllib.parse.parse_qs(parsed_url.query)
                 rel_path = query.get('path', [''])[0]
+                
+                # Decode the URL-encoded path
+                rel_path = urllib.parse.unquote(rel_path)
                 full_path = self.get_full_path(rel_path)
+                
+                print(f"Download request for path: {rel_path}")
+                print(f"Full path: {full_path}")
                 
                 # Check if file exists
                 if not os.path.exists(full_path):
+                    print(f"File not found at path: {full_path}")
                     self.send_error(404, "File not found")
                     return
                 
                 if os.path.isdir(full_path):
+                    print(f"Path is a directory: {full_path}")
                     self.send_error(400, "Cannot download a directory")
                     return
                 
-                # Serve the file
-                self.path = '/'+rel_path
-                # Let SimpleHTTPRequestHandler serve the file
-                super().do_GET()
+                # Get file size and type
+                file_size = os.path.getsize(full_path)
+                content_type, _ = mimetypes.guess_type(full_path)
+                if content_type is None:
+                    content_type = 'application/octet-stream'
+                
+                print(f"File size: {file_size} bytes")
+                print(f"Content type: {content_type}")
+                
+                # Send file
+                self.send_response(200)
+                self.send_header('Content-Type', content_type)
+                self.send_header('Content-Length', str(file_size))
+                self.send_header('Content-Disposition', f'attachment; filename="{os.path.basename(full_path)}"')
+                self.end_headers()
+                
+                with open(full_path, 'rb') as f:
+                    self.wfile.write(f.read())
+                
+                print(f"Successfully sent file: {full_path}")
                 return
                 
             except Exception as e:
