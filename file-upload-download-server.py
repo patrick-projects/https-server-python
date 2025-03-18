@@ -749,13 +749,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                             if (currentPath) {
                                 const parentItem = document.createElement('div');
                                 parentItem.className = 'file-item folder';
+                                parentItem.style.cursor = 'pointer';
                                 
                                 const fileInfo = document.createElement('div');
                                 fileInfo.className = 'file-info';
                                 
                                 const fileIcon = document.createElement('span');
                                 fileIcon.className = 'file-icon';
-                                fileIcon.textContent = '[DIR]';
+                                fileIcon.textContent = '📁';
                                 
                                 const fileName = document.createElement('div');
                                 fileName.className = 'file-name';
